@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Person, Product, PaymentMethod } from "@/lib/types";
 import { PAYMENT_LABELS } from "@/lib/types";
-import { formatBRL } from "@/lib/money";
+import { formatBRL, reaisToCents } from "@/lib/money";
 import { apiGet, apiSend } from "@/lib/client";
 import PersonPicker from "@/components/PersonPicker";
 
@@ -17,6 +17,7 @@ export default function VendaPage() {
   const [qty, setQty] = useState<Record<number, number>>({});
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
+  const [cashReceived, setCashReceived] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -88,6 +89,7 @@ export default function VendaPage() {
       setQty({});
       setMethod(null);
       setPerson(null);
+      setCashReceived("");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -195,6 +197,7 @@ export default function VendaPage() {
                 onClick={() => {
                   setMethod(m);
                   if (m !== "marcado") setPerson(null);
+                  if (m !== "dinheiro") setCashReceived("");
                   setSuccess(null);
                 }}
                 className={`rounded-2xl py-4 text-lg font-bold ${
@@ -209,6 +212,79 @@ export default function VendaPage() {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {cart.length > 0 && method === "dinheiro" && (
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3">
+          <p className="mb-2 font-semibold text-slate-700">Calculadora de troco</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {[5, 10, 20, 50, 100, 200]
+              .filter((b) => b * 100 >= totalCents)
+              .map((b) => (
+                <button
+                  key={b}
+                  onClick={() => setCashReceived(String(b))}
+                  className="rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700"
+                >
+                  R$ {b}
+                </button>
+              ))}
+            <button
+              onClick={() =>
+                setCashReceived((totalCents / 100).toFixed(2).replace(".", ","))
+              }
+              className="rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700"
+            >
+              Valor exato
+            </button>
+          </div>
+          <div className="relative mb-3">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              R$
+            </span>
+            <input
+              value={cashReceived}
+              onChange={(e) => setCashReceived(e.target.value)}
+              inputMode="decimal"
+              placeholder="Valor recebido"
+              className="w-full rounded-xl border border-slate-300 py-3 pl-10 pr-3 text-lg"
+            />
+          </div>
+          {(() => {
+            const received = reaisToCents(cashReceived);
+            if (received === null) {
+              return (
+                <p className="text-sm text-slate-400">
+                  Digite quanto o cliente deu para ver o troco.
+                </p>
+              );
+            }
+            const troco = received - totalCents;
+            const positive = troco >= 0;
+            return (
+              <div
+                className={`flex items-center justify-between rounded-xl px-3 py-3 ${
+                  positive ? "bg-success/10" : "bg-danger/10"
+                }`}
+              >
+                <span
+                  className={`font-semibold ${
+                    positive ? "text-success" : "text-danger"
+                  }`}
+                >
+                  {positive ? "Troco" : "Falta"}
+                </span>
+                <span
+                  className={`text-2xl font-extrabold ${
+                    positive ? "text-success" : "text-danger"
+                  }`}
+                >
+                  {formatBRL(Math.abs(troco))}
+                </span>
+              </div>
+            );
+          })()}
         </div>
       )}
 

@@ -16,6 +16,8 @@ rodar no **Vercel** e ser instalado na tela inicial do iPhone (PWA).
   formas de pagamento (Cartão, Pix, Dinheiro, Marcado). Em "Marcado" você escolhe
   uma pessoa cadastrada (com busca quando há mais de 10) ou cadastra na hora.
   A confirmação de sucesso **só aparece quando o banco confirma a gravação**.
+  Ao escolher **Dinheiro**, aparece uma **calculadora de troco**: digite (ou toque
+  na nota) o valor recebido e o troco é calculado na hora.
 - **Relatório** — total do dia, nº de vendas, total por forma de pagamento,
   total por produto, últimas vendas e **seletor de dia** (evento de vários dias).
   Cada venda da lista tem um botão **Desfazer**: cancela a venda (com confirmação),
