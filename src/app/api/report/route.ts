@@ -22,6 +22,7 @@ export async function GET(req: Request) {
     const daysRows = await sql<{ day: string }[]>`
       SELECT DISTINCT (created_at AT TIME ZONE ${EVENT_TZ})::date::text AS day
       FROM sales
+      WHERE canceled = FALSE
       ORDER BY day DESC
     `;
     const availableDays = daysRows.map((r) => r.day);
@@ -31,6 +32,7 @@ export async function GET(req: Request) {
              COUNT(*)::int AS sales_count
       FROM sales
       WHERE (created_at AT TIME ZONE ${EVENT_TZ})::date = ${day}::date
+        AND canceled = FALSE
     `;
 
     const byPayment = await sql<
@@ -41,6 +43,7 @@ export async function GET(req: Request) {
              COUNT(*)::int AS count
       FROM sales
       WHERE (created_at AT TIME ZONE ${EVENT_TZ})::date = ${day}::date
+        AND canceled = FALSE
       GROUP BY payment_method
     `;
 
@@ -53,6 +56,7 @@ export async function GET(req: Request) {
       FROM sale_items si
       JOIN sales s ON s.id = si.sale_id
       WHERE (s.created_at AT TIME ZONE ${EVENT_TZ})::date = ${day}::date
+        AND s.canceled = FALSE
       GROUP BY si.product_name
       ORDER BY quantity DESC
     `;
@@ -72,6 +76,7 @@ export async function GET(req: Request) {
       FROM sales s
       LEFT JOIN people p ON p.id = s.person_id
       WHERE (s.created_at AT TIME ZONE ${EVENT_TZ})::date = ${day}::date
+        AND s.canceled = FALSE
       ORDER BY s.created_at DESC
     `;
 

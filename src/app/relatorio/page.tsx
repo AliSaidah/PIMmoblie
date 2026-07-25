@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { formatBRL } from "@/lib/money";
-import { apiGet } from "@/lib/client";
+import { apiGet, apiSend } from "@/lib/client";
 import { PAYMENT_LABELS, PaymentMethod } from "@/lib/types";
 
 interface ReportSale {
@@ -44,6 +44,8 @@ export default function RelatorioPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [undoingId, setUndoingId] = useState<number | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async (d: string) => {
     setLoading(true);
@@ -62,6 +64,31 @@ export default function RelatorioPage() {
   useEffect(() => {
     load("");
   }, [load]);
+
+  async function undoSale(sale: ReportSale) {
+    const resumo = sale.items
+      .map((i) => `${i.quantity}× ${i.product_name}`)
+      .join(", ");
+    if (
+      !confirm(
+        `Desfazer esta venda de ${formatBRL(sale.total_cents)} (${resumo})?\n\n` +
+          `Ela sai dos totais e das marcações. Não dá pra reverter.`
+      )
+    )
+      return;
+    setUndoingId(sale.id);
+    setError(null);
+    setNotice(null);
+    try {
+      await apiSend(`/api/sales/${sale.id}`, "DELETE");
+      setNotice(`Venda de ${formatBRL(sale.total_cents)} desfeita.`);
+      await load(day);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUndoingId(null);
+    }
+  }
 
   return (
     <div className="px-4 pt-5">
@@ -95,6 +122,12 @@ export default function RelatorioPage() {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {notice && (
+        <div className="mb-4 rounded-xl bg-success/10 px-3 py-2 text-sm font-medium text-success">
+          ✅ {notice}
         </div>
       )}
 
@@ -205,6 +238,13 @@ export default function RelatorioPage() {
                         <span className="text-slate-500">👤 {s.person_name}</span>
                       )}
                     </div>
+                    <button
+                      onClick={() => undoSale(s)}
+                      disabled={undoingId === s.id}
+                      className="mt-2 w-full rounded-xl border border-danger/40 py-2 text-sm font-semibold text-danger disabled:opacity-50"
+                    >
+                      {undoingId === s.id ? "Desfazendo…" : "↩︎ Desfazer venda"}
+                    </button>
                   </div>
                 ))
               )}

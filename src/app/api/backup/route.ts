@@ -26,6 +26,7 @@ export async function GET() {
         created_local: string;
         payment_method: PaymentMethod;
         paid: boolean;
+        canceled: boolean;
         person_name: string | null;
         product_name: string;
         unit_price_cents: number;
@@ -37,6 +38,7 @@ export async function GET() {
              to_char(s.created_at AT TIME ZONE ${EVENT_TZ}, 'YYYY-MM-DD HH24:MI:SS') AS created_local,
              s.payment_method,
              s.paid,
+             s.canceled,
              p.name AS person_name,
              si.product_name,
              si.unit_price_cents,
@@ -53,6 +55,7 @@ export async function GET() {
       "data_hora",
       "forma_pagamento",
       "pago",
+      "cancelada",
       "pessoa",
       "produto",
       "preco_unit",
@@ -69,6 +72,7 @@ export async function GET() {
           r.created_local,
           PAYMENT_LABELS[r.payment_method] ?? r.payment_method,
           r.paid ? "sim" : "não",
+          r.canceled ? "sim" : "não",
           r.person_name ?? "",
           r.product_name,
           reais(r.unit_price_cents),
