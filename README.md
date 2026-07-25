@@ -18,6 +18,9 @@ rodar no **Vercel** e ser instalado na tela inicial do iPhone (PWA).
   A confirmação de sucesso **só aparece quando o banco confirma a gravação**.
 - **Relatório** — total do dia, nº de vendas, total por forma de pagamento,
   total por produto, últimas vendas e **seletor de dia** (evento de vários dias).
+  Cada venda da lista tem um botão **Desfazer**: cancela a venda (com confirmação),
+  tirando-a dos totais e das marcações. A venda cancelada não é apagada de vez —
+  fica marcada como `cancelada` no backup, para manter o histórico.
 - **Marcações** — cadastro direto de pessoas, lista "Em aberto" com itens e valor
   e botão "Marcar como pago", e lista separada de pessoas sem conta em aberto.
 - **Produtos** — adicionar, editar e remover (nome e preço).

@@ -102,6 +102,12 @@ export function ensureSchema(): Promise<void> {
           quantity INTEGER NOT NULL CHECK (quantity > 0)
         )
       `;
+      // Colunas de cancelamento (adicionadas em bancos já existentes também).
+      await sql`
+        ALTER TABLE sales ADD COLUMN IF NOT EXISTS canceled BOOLEAN NOT NULL DEFAULT FALSE
+      `;
+      await sql`ALTER TABLE sales ADD COLUMN IF NOT EXISTS canceled_at TIMESTAMPTZ`;
+
       await sql`CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales (created_at)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_sales_person ON sales (person_id)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items (sale_id)`;

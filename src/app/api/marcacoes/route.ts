@@ -20,6 +20,7 @@ export async function GET() {
         ON s.person_id = p.id
        AND s.payment_method = 'marcado'
        AND s.paid = FALSE
+       AND s.canceled = FALSE
       GROUP BY p.id, p.name
       ORDER BY p.name ASC
     `;
@@ -46,6 +47,7 @@ export async function GET() {
         JOIN sale_items si ON si.sale_id = s.id
         WHERE s.payment_method = 'marcado'
           AND s.paid = FALSE
+          AND s.canceled = FALSE
           AND s.person_id IN ${sql(ids)}
         GROUP BY s.person_id, si.product_name
         ORDER BY si.product_name ASC
